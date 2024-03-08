@@ -472,7 +472,7 @@ def figure6(city_list):  # 水球图
 
 
 def figure7():  # 折线/面积图
-    fj_file = open('房价_total.json', 'r', encoding='utf-8')
+    fj_file = open('../data/房价_total.json', 'r', encoding='utf-8')
     fj_sum = json.load(fj_file)  # 用.load
     fj_file.close()
 

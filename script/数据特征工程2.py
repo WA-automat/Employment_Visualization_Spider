@@ -311,7 +311,7 @@ def feature_analyse5():
     plt.rcParams['font.sans-serif'] = ['KaiTi']  # 中文
     plt.rcParams['axes.unicode_minus'] = False  # 负号
 
-    fj_file = open('房价_total.json', 'r', encoding='utf-8')
+    fj_file = open('../data/房价_total.json', 'r', encoding='utf-8')
     fj_sum = json.load(fj_file)  # 用.load
     fj_file.close()
 

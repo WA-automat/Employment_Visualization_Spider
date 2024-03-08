@@ -29,20 +29,22 @@ city_abbr = {
 
 fj_data_sum = {}
 
-for city_name in city_list:
-    url_template = 'http://{}.fangjia.com/trend/year2Data?defaultCityName={}&districtName=&region=&block=&keyword='.format(
-        city_abbr[city_name], city_name)
+if __name__ == '__main__':
 
-    browser.get(url_template)
-    time.sleep(1)
-    print(city_name, ":")
-    fj_t = browser.find_element(By.XPATH, '/html/body').text
-    fj_t = json.loads(fj_t)
-    # print(fj_t, type(fj_t))
+    for city_name in city_list:
+        url_template = 'http://{}.fangjia.com/trend/year2Data?defaultCityName={}&districtName=&region=&block=&keyword='.format(
+            city_abbr[city_name], city_name)
 
-    detailed_data = fj_t['series'][0]['data']
-    print(detailed_data, type(detailed_data))
-    fj_data_sum[city_name] = detailed_data
+        browser.get(url_template)
+        time.sleep(1)
+        print(city_name, ":")
+        fj_t = browser.find_element(By.XPATH, '/html/body').text
+        fj_t = json.loads(fj_t)
+        # print(fj_t, type(fj_t))
 
-with open('房价' + '_total.json', 'w', encoding='utf-8') as fp:
-    json.dump(fj_data_sum, fp, indent=4, ensure_ascii=False)
+        detailed_data = fj_t['series'][0]['data']
+        print(detailed_data, type(detailed_data))
+        fj_data_sum[city_name] = detailed_data
+
+    with open('房价' + '_total.json', 'w', encoding='utf-8') as fp:
+        json.dump(fj_data_sum, fp, indent=4, ensure_ascii=False)
