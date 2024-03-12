@@ -10,24 +10,24 @@ import seaborn as sns
 import json
 import copy
 
-from sklearn.ensemble import RandomForestClassifier,RandomForestRegressor
-from sklearn.tree import DecisionTreeClassifier,export_graphviz
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.tree import DecisionTreeClassifier, export_graphviz
 from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeClassifier,export_graphviz
-from sklearn.model_selection import KFold,cross_val_score  #交叉验证
-from sklearn.model_selection import GridSearchCV,RandomizedSearchCV  #超参数搜索
+from sklearn.tree import DecisionTreeClassifier, export_graphviz
+from sklearn.model_selection import KFold, cross_val_score  # 交叉验证
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV  # 超参数搜索
 from imblearn.under_sampling import RandomUnderSampler
 
 from sklearn.cluster import AgglomerativeClustering
-import scipy.cluster.hierarchy as sch #此处主要用来画图
+import scipy.cluster.hierarchy as sch  # 此处主要用来画图
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 import re
 
 from statsmodels.tsa.arima.model import ARIMA
-from statsmodels.tsa.stattools import adfuller  #平稳性检验
-from statsmodels.stats.diagnostic import acorr_ljungbox #白噪声检验
-from statsmodels.graphics.tsaplots import plot_acf,plot_pacf  #自相关图、偏自相关图
+from statsmodels.tsa.stattools import adfuller  # 平稳性检验
+from statsmodels.stats.diagnostic import acorr_ljungbox  # 白噪声检验
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf  # 自相关图、偏自相关图
 
 
 # 特征挖掘_续：
@@ -38,17 +38,16 @@ from statsmodels.graphics.tsaplots import plot_acf,plot_pacf  #自相关图、�
 
 # 三
 def feature_analyse3():
-    file_data=pd.read_excel('招聘信息_afterProcessing.xlsx')
-    file_data=file_data.loc[:,['id','site','revenue','experience','attribute','nop','qualification' ]]
+    file_data = pd.read_excel('../data/招聘信息_afterProcessing.xlsx')
+    file_data = file_data.loc[:, ['id', 'site', 'revenue', 'experience', 'attribute', 'nop', 'qualification']]
 
-    new_arr1=file_data.loc[:,'revenue'].values.reshape(-1,1)
+    new_arr1 = file_data.loc[:, 'revenue'].values.reshape(-1, 1)
 
     # 画层次聚类图
     # z=sch.linkage(new_arr1,method='ward')
     # sch.dendrogram(z ,new_arr1.shape[0])
     # plt.title('Cluster')
     # plt.show()
-
 
     # S=[] #存总轮廓系数 （公式看word）
     # K=range(2,8) #K取值从2到样本容量n-1，不能取n因为取n时总轮廓系数为1，且无意义
@@ -61,27 +60,23 @@ def feature_analyse3():
     # plt.plot(K,S,'o-')
     # plt.show()
 
-
-    Agg_hc = AgglomerativeClustering(n_clusters = 6, metric = 'euclidean', linkage = 'ward',) #linkage = 'ward'时，metric必须为'euclidean'，即默认
-    y_hc = Agg_hc.fit_predict(new_arr1) # 训练数据
-    #也可以使用k-means方法，此处用系统聚类法
+    Agg_hc = AgglomerativeClustering(n_clusters=6, metric='euclidean',
+                                     linkage='ward', )  # linkage = 'ward'时，metric必须为'euclidean'，即默认
+    y_hc = Agg_hc.fit_predict(new_arr1)  # 训练数据
+    # 也可以使用k-means方法，此处用系统聚类法
     # md=KMeans(6,n_init=10).fit(new_arr1)
     # y_hc=md.labels_
     # print(y_hc)#查看每个样本属于哪个族
-    file_data.loc[:,'revenue_class']=y_hc #分为6类
+    file_data.loc[:, 'revenue_class'] = y_hc  # 分为6类
 
-
-    file_data1=file_data.loc[:,['revenue','revenue_class']]
-    file_data1= file_data1.groupby(['revenue_class']).agg({'revenue': ['mean','count']})
+    file_data1 = file_data.loc[:, ['revenue', 'revenue_class']]
+    file_data1 = file_data1.groupby(['revenue_class']).agg({'revenue': ['mean', 'count']})
     print(file_data1)
-    class_explanation={}
+    class_explanation = {}
     for i in range(len(file_data1)):
-        class_explanation[str(i)]=file_data1.loc[i,('revenue','mean')].round(2)
+        class_explanation[str(i)] = file_data1.loc[i, ('revenue', 'mean')].round(2)
     print(class_explanation)
-    #------------
-
-
-
+    # ------------
 
     # #第二次
     # new_file_data=file_data.loc[( file_data.loc[:,'revenue_class']==1),:]
@@ -142,25 +137,21 @@ def feature_analyse3():
     # file_data1= file_data1.groupby(['revenue_class']).agg({'revenue': ['mean','count']})
     # print(file_data1)
 
-
-    class_explanation={}
+    class_explanation = {}
     for i in range(len(file_data1)):
-        class_explanation[str(i)]=file_data1.loc[i,('revenue','mean')].round(2)
-    class_explanation=[(i,j) for i,j in class_explanation.items()]
-    class_explanation= sorted(class_explanation ,key=lambda x:x[1])
+        class_explanation[str(i)] = file_data1.loc[i, ('revenue', 'mean')].round(2)
+    class_explanation = [(i, j) for i, j in class_explanation.items()]
+    class_explanation = sorted(class_explanation, key=lambda x: x[1])
     print(class_explanation)
 
-    writer1=pd.ExcelWriter('分类结果测试.xlsx')
-    file_data.to_excel(writer1,sheet_name='sheet_1',index=False)
-    writer1.save()#记得加save
+    writer1 = pd.ExcelWriter('分类结果测试.xlsx')
+    file_data.to_excel(writer1, sheet_name='sheet_1', index=False)
+    writer1.save()  # 记得加save
+
+    return file_data, class_explanation
 
 
-    return file_data,class_explanation
-
-
-
-
-#四
+# 四
 def feature_analyse4(city_list):
     file_data = pd.read_excel('招聘信息汇总.xlsx')
     # symbol_cleaning = [" ", "\"", "“", "”", "*", "!", "！", "。", "."]
@@ -170,143 +161,134 @@ def feature_analyse4(city_list):
     # pd.set_option('display.width', 1000)
     # pd.set_option('display.max_colwidth', 1000)
 
-    file_data1= file_data.groupby(['site','com_name']).agg({'com_name': ['count']})
+    file_data1 = file_data.groupby(['site', 'com_name']).agg({'com_name': ['count']})
 
     file_data2 = file_data.groupby(['site', 'type']).agg({'type': ['count']})
 
     file_data3 = file_data.groupby(['site', 'feature']).agg({'feature': ['count']})
 
-
     # #公司热度
-    com_name_frequency={}
+    com_name_frequency = {}
     for city_name in city_list:
-        com_name_frequency[city_name]={}
-        t_df=file_data1.loc[city_name,:]
+        com_name_frequency[city_name] = {}
+        t_df = file_data1.loc[city_name, :]
         for t_name in t_df.index.values:
-            t_name=t_name.strip()
-            if com_name_frequency[city_name].get(t_name,-1)==-1:
-                com_name_frequency[city_name][t_name]= int(t_df.loc[t_name,('com_name','count')])
+            t_name = t_name.strip()
+            if com_name_frequency[city_name].get(t_name, -1) == -1:
+                com_name_frequency[city_name][t_name] = int(t_df.loc[t_name, ('com_name', 'count')])
             else:
-                com_name_frequency[city_name][t_name]+=int(t_df.loc[t_name,('com_name','count')])
+                com_name_frequency[city_name][t_name] += int(t_df.loc[t_name, ('com_name', 'count')])
     # print(com_name_frequency)
     # 去除值为1的键
-    for city_name,content in  copy.deepcopy(com_name_frequency).items():
-        for com_name,count in content.items():
-            if count==1 and len(com_name)>=8 or len(com_name)>=14 and count==2:
+    for city_name, content in copy.deepcopy(com_name_frequency).items():
+        for com_name, count in content.items():
+            if count == 1 and len(com_name) >= 8 or len(com_name) >= 14 and count == 2:
                 com_name_frequency[city_name].pop(com_name)
-
 
     #
     # #公司类型热度
-    com_type_frequency={}
+    com_type_frequency = {}
 
     for city_name in city_list:
-        com_type_frequency[city_name]={}
-        t_df=file_data2.loc[city_name,:]
+        com_type_frequency[city_name] = {}
+        t_df = file_data2.loc[city_name, :]
 
         for t_type in t_df.index.values:
-            t_type_num=int(t_df.loc[t_type,('type','count')])
+            t_type_num = int(t_df.loc[t_type, ('type', 'count')])
 
             if isinstance(t_type, str):
                 t_type_list = re.split('[ ,｜丨|，/、。;；!！+＋*~-]', t_type)
-                t_type_list=list(set(t_type_list))
+                t_type_list = list(set(t_type_list))
 
                 for type_name in t_type_list:
-                    if type_name!='':
-                        if com_type_frequency[city_name].get(type_name,-1)==-1:
-                            com_type_frequency[city_name][type_name]= t_type_num
+                    if type_name != '':
+                        if com_type_frequency[city_name].get(type_name, -1) == -1:
+                            com_type_frequency[city_name][type_name] = t_type_num
                         else:
-                            com_type_frequency[city_name][type_name]+=t_type_num
+                            com_type_frequency[city_name][type_name] += t_type_num
     # print(com_type_frequency)
 
     # 去除值为1的键
-    for city_name,content in  copy.deepcopy(com_type_frequency).items():
-        for type_name,count in content.items():
-            if count==1 or len(type_name)>15:
+    for city_name, content in copy.deepcopy(com_type_frequency).items():
+        for type_name, count in content.items():
+            if count == 1 or len(type_name) > 15:
                 com_type_frequency[city_name].pop(type_name)
-
 
     #
     # #公司特点热度
-    com_feature_frequency={}
+    com_feature_frequency = {}
 
     for city_name in city_list:
-        com_feature_frequency[city_name]={}
-        t_df=file_data3.loc[city_name,:]
+        com_feature_frequency[city_name] = {}
+        t_df = file_data3.loc[city_name, :]
         for t_feature in t_df.index.values:
             t_feature_num = int(t_df.loc[t_feature, ('feature', 'count')])
             if isinstance(t_feature, str):
                 t_feature_list = re.split('[ ,｜丨|，/、。;；!！+＋*~-]', t_feature)
-                t_feature_list=list(set(t_feature_list))
+                t_feature_list = list(set(t_feature_list))
                 for feature_name in t_feature_list:
-                        if feature_name!='':
-                            if com_feature_frequency[city_name].get(feature_name,-1)==-1:
-                                com_feature_frequency[city_name][feature_name]= t_feature_num
-                            else:
-                                com_feature_frequency[city_name][feature_name]+=t_feature_num
+                    if feature_name != '':
+                        if com_feature_frequency[city_name].get(feature_name, -1) == -1:
+                            com_feature_frequency[city_name][feature_name] = t_feature_num
+                        else:
+                            com_feature_frequency[city_name][feature_name] += t_feature_num
     # print(com_feature_frequency)
 
     # 去除值为1的键
-    for city_name,content in  copy.deepcopy(com_feature_frequency).items():
-        for feature_name,count in content.items():
-            if count==1 or len(feature_name)>15:
+    for city_name, content in copy.deepcopy(com_feature_frequency).items():
+        for feature_name, count in content.items():
+            if count == 1 or len(feature_name) > 15:
                 com_feature_frequency[city_name].pop(feature_name)
 
-
-
     # #公司热度  总
-    com_name_frequency_z={}
-    com_name=file_data.loc[:,'com_name'].values
+    com_name_frequency_z = {}
+    com_name = file_data.loc[:, 'com_name'].values
     for t_name in com_name:
-        t_name=t_name.strip()
-        if com_name_frequency_z.get(t_name,-1)==-1:
-            com_name_frequency_z[t_name]=1
+        t_name = t_name.strip()
+        if com_name_frequency_z.get(t_name, -1) == -1:
+            com_name_frequency_z[t_name] = 1
         else:
-            com_name_frequency_z[t_name] +=1
+            com_name_frequency_z[t_name] += 1
 
-
-
-    #公司类型热度 总
-    com_type_frequency_z={}
+    # 公司类型热度 总
+    com_type_frequency_z = {}
     com_type = file_data.loc[:, 'type'].values
 
     for t_type in com_type:
-        if isinstance(t_type,str):
+        if isinstance(t_type, str):
             t_type_list = re.split('[ ,｜丨|，/、。;；!！+＋~-]', t_type)
-            t_type_list=list(set(t_type_list))
+            t_type_list = list(set(t_type_list))
             for type_name in t_type_list:
                 type_name = type_name.strip()
-                if type_name!='':
+                if type_name != '':
                     if com_type_frequency_z.get(type_name, -1) == -1:
                         com_type_frequency_z[type_name] = 1
                     else:
                         com_type_frequency_z[type_name] += 1
 
-    #公司特点热度 总
-    com_feature_frequency_z={}
+    # 公司特点热度 总
+    com_feature_frequency_z = {}
     com_feature = file_data.loc[:, 'feature'].values
-    ii=0
+    ii = 0
     for t_feature in com_feature:
-        if isinstance(t_feature,str):
+        if isinstance(t_feature, str):
             t_feature_list = re.split('[ ,｜丨|，/、。;；!！+＋~-]', t_feature)
-            t_feature_list=list(set(t_feature_list))
+            t_feature_list = list(set(t_feature_list))
             for feature_name in t_feature_list:
                 feature_name = feature_name.strip()
-                if feature_name!='':
+                if feature_name != '':
                     if com_feature_frequency_z.get(feature_name, -1) == -1:
                         com_feature_frequency_z[feature_name] = 1
                     else:
                         com_feature_frequency_z[feature_name] += 1
 
-    print('*******',com_name_frequency)
-    print('*******',com_type_frequency)
-    print('*******',com_feature_frequency)
-    return com_name_frequency,com_type_frequency,com_feature_frequency,  com_name_frequency_z,com_type_frequency_z,com_feature_frequency_z
+    print('*******', com_name_frequency)
+    print('*******', com_type_frequency)
+    print('*******', com_feature_frequency)
+    return com_name_frequency, com_type_frequency, com_feature_frequency, com_name_frequency_z, com_type_frequency_z, com_feature_frequency_z
 
 
-
-
-#五
+# 五
 def feature_analyse5():
     plt.rcParams['font.sans-serif'] = ['KaiTi']  # 中文
     plt.rcParams['axes.unicode_minus'] = False  # 负号
@@ -327,7 +309,7 @@ def feature_analyse5():
     for city_name in city_names:
 
         fjbj_data = [i[1] for i in fj_sum[city_name]]
-        fjbj_data = fjbj_data[-int(len(fjbj_data)*4/5):]
+        fjbj_data = fjbj_data[-int(len(fjbj_data) * 4 / 5):]
 
         data = pd.DataFrame(columns=['house_price'])
         data.loc[:, 'house_price'] = np.array(fjbj_data)
@@ -382,7 +364,7 @@ def feature_analyse5():
             #
             # #adf平稳性检验（主要）
             t_res = adfuller(d1_data)
-            print('原始序列一阶差分的ADF检验结果为：',t_res)
+            print('原始序列一阶差分的ADF检验结果为：', t_res)
 
             if t_res[1] >= 0.05:
                 d2_data = d1_data.diff(periods=1, axis=0)
@@ -459,7 +441,6 @@ def feature_analyse5():
             # print(aic_matrix.stack())
             # print(u'AIC 最小的p值 和 q 值：%s,%s' %(p,q))
 
-
             # #五、模型评估、检验
             # # 建立模型后，需要对残差序列进行检验。若残差序列为白噪声序列，则说明时间序列中的有用信息已经被提取完毕，
             # # 剩下的全是随机扰动，是无法预测和使用的。
@@ -505,9 +486,8 @@ def feature_analyse5():
         json.dump(total_pre_data, f, indent=4, ensure_ascii=False)
 
 
-
-
-# feature_analyse3()
+if __name__ == '__main__':
+    feature_analyse3()
 
 # from 数据特征工程1 import data_pretreatment,feature_analyse1
 # Data_df0=pd.read_excel('招聘信息汇总.xlsx',sheet_name=0)
