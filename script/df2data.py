@@ -35,6 +35,12 @@ if __name__ == '__main__':
         cloud_data[city]['com_name'] = []
         for key, value in com_name_counter.items():
             cloud_data[city]['com_name'].append({'name': key, 'value': value})
+        cloud_data[city]['job'] = []
+        for key, value in job_counter.items():
+            cloud_data[city]['job'].append({'name': key, 'value': value})
+        cloud_data[city]['feature'] = []
+        for key, value in feature_counter.items():
+            cloud_data[city]['feature'].append({'name': key, 'value': value})
 
     output_file = "../data/word_counts.json"
     with open(output_file, "w", encoding="utf-8") as f:
