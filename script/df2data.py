@@ -39,3 +39,10 @@ if __name__ == '__main__':
     output_file = "../data/word_counts.json"
     with open(output_file, "w", encoding="utf-8") as f:
         json.dump(cloud_data, f, ensure_ascii=False, indent=4)
+
+    # 就业数据转换
+    with open('../data/employment.json', 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    json_str = json.dumps(data, ensure_ascii=False, indent=4).encode('utf-8')
+    with open('../data/employment.json', 'wb') as f:
+        f.write(json_str)
